@@ -13,24 +13,34 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Enhanced middleware
+const allowedOrigins = [
+  "http://localhost:3000",             
+  "https://try-on-ai-fit.vercel.app"    
+];
+
 app.use(cors({
-  origin: 'http://localhost:3000',
-  credentials: true
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
 }));
+
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use('/uploads', express.static('uploads'));
 app.use('/outputs', express.static('outputs'));
 app.use('/defaults', express.static('defaults'));
 
-// JWT Secret
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key';
 
-// User storage (in production, use a database)
 const usersFile = path.join(__dirname, 'users.json');
 
-// Initialize users file if it doesn't exist
 const initializeUsersFile = () => {
   if (!fs.existsSync(usersFile)) {
     fs.writeFileSync(usersFile, JSON.stringify([]));
@@ -39,7 +49,7 @@ const initializeUsersFile = () => {
 
 initializeUsersFile();
 
-// Helper functions for user management
+
 const readUsers = () => {
   try {
     const data = fs.readFileSync(usersFile, 'utf8');
@@ -420,7 +430,7 @@ class ReplicateVellaService {
         seed: options.seed || Math.floor(Math.random() * 1000000),
       };
 
-      // Process each garment with proper type handling
+
       for (const garment of garments) {
         const garmentImageBuffer = await this.prepareImage(garment.imagePath, 'garment');
         const garmentParam = this.getGarmentParameter(garment.type);
@@ -472,7 +482,6 @@ class ReplicateVellaService {
                   mimeType: 'image/png'
                 });
               } catch (urlError) {
-                // Continue to next method
               }
             } else if (item.url && typeof item.url === 'string') {
               results.push({
@@ -511,7 +520,6 @@ class ReplicateVellaService {
               mimeType: 'image/png'
             });
           } catch (urlError) {
-            // Continue to next method
           }
         } else if (output.url && typeof output.url === 'string') {
           results.push({
@@ -685,7 +693,6 @@ class MockAIService {
         }
       }
     } catch (error) {
-      // Continue without images
     }
     
     ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
@@ -719,11 +726,9 @@ if (process.env.REPLICATE_API_TOKEN) {
   activeAIService = new MockAIService();
 }
 
-// Enhanced Job tracking with user isolation
 const generationJobs = new Map();
 
 const saveGeneratedImage = (imageBuffer, filename, userId) => {
-  // Create user-specific directory if it doesn't exist
   const userOutputDir = path.join(__dirname, 'outputs', userId);
   if (!fs.existsSync(userOutputDir)) {
     fs.mkdirSync(userOutputDir, { recursive: true });
@@ -760,7 +765,6 @@ const getImagePath = (type, id, file) => {
   throw new Error(`Invalid ${type} image: ${id}`);
 };
 
-// Health check (public)
 app.get('/api/health', (req, res) => {
   const isReplicate = activeAIService instanceof ReplicateVellaService;
   res.json({ 
@@ -928,7 +932,7 @@ app.post('/api/generate', authenticateToken, upload.fields([
       modelImage: modelImagePath,
       garments: garments,
       isDefaultModel: modelImagePath.includes('defaults'),
-      userId: userId // Store user ID with job
+      userId: userId 
     });
 
     res.json({ 
@@ -947,14 +951,13 @@ app.post('/api/generate', authenticateToken, upload.fields([
   }
 });
 
-// User-specific status endpoint
 app.get('/api/status/:requestId', authenticateToken, (req, res) => {
   const job = generationJobs.get(req.params.requestId);
   if (!job) {
     return res.status(404).json({ error: 'Job not found' });
   }
 
-  // Check if the job belongs to the authenticated user
+
   if (job.userId !== req.user.userId) {
     return res.status(403).json({ error: 'Access denied' });
   }
@@ -984,18 +987,14 @@ app.get('/api/status/:requestId', authenticateToken, (req, res) => {
   });
 });
 
-// User-specific outputs serving
+
 app.use('/outputs/:userId', (req, res, next) => {
-  // Basic protection for user-specific output directories
-  // In production, you might want more sophisticated access control
   next();
 });
 
-// User dashboard data (protected)
 app.get('/api/user/dashboard', authenticateToken, (req, res) => {
   const userId = req.user.userId;
   
-  // Get user's jobs
   const userJobs = Array.from(generationJobs.entries())
     .filter(([_, job]) => job.userId === userId)
     .map(([requestId, job]) => ({
@@ -1007,7 +1006,7 @@ app.get('/api/user/dashboard', authenticateToken, (req, res) => {
       completedTime: job.completedTime
     }))
     .sort((a, b) => new Date(b.startTime) - new Date(a.startTime))
-    .slice(0, 10); // Last 10 jobs
+    .slice(0, 10);
 
   res.json({
     user: {
@@ -1023,7 +1022,6 @@ app.get('/api/user/dashboard', authenticateToken, (req, res) => {
   });
 });
 
-// Helper functions (same as before)
 const validateImage = (imagePath) => {
   if (imagePath.includes('defaults')) {
     return true;
@@ -1068,7 +1066,6 @@ async function processVellaTryOn(requestId, options = {}) {
     job.message = 'Processing results...';
     generationJobs.set(requestId, job);
 
-    // Process results
     const results = {};
     
     for (let i = 0; i < vellaResults.length; i++) {
@@ -1103,14 +1100,11 @@ async function processVellaTryOn(requestId, options = {}) {
           results.modelBack = saveGeneratedImage(backViewBuffer, `model-back-${requestId}.jpg`, job.userId);
         }
       } catch (error) {
-        // Continue without additional images
       }
     }
 
-    // Set results
     job.results = results;
 
-    // Complete
     job.status = 'completed';
     job.progress = 100;
     job.message = 'Vella virtual try-on completed successfully';
@@ -1127,7 +1121,6 @@ async function processVellaTryOn(requestId, options = {}) {
         }
       }
     } catch (cleanupError) {
-      // Ignore cleanup errors
     }
 
   } catch (error) {
@@ -1161,7 +1154,6 @@ async function createMockResultImage(modelImagePath, garments, index = 0) {
       ctx.globalAlpha = 1.0;
     }
   } catch (error) {
-    // Continue without model image
   }
   
   ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
@@ -1199,7 +1191,6 @@ async function createProfessionalEnhancedProduct(garments) {
       ctx.drawImage(garmentImage, x, y, width, height);
     }
   } catch (error) {
-    // Continue without garment image
   }
   
   ctx.fillStyle = '#f8fafc';
@@ -1238,7 +1229,6 @@ async function createProfessionalProductBack(garments) {
       ctx.globalAlpha = 1.0;
     }
   } catch (error) {
-    // Continue without garment image
   }
   
   ctx.fillStyle = '#e2e8f0';
@@ -1272,7 +1262,6 @@ async function createModelBackView(frontImagePath, userId) {
       ctx.fillRect(0, 0, 512, 640);
     }
   } catch (error) {
-    // Continue without front image
   }
   
   ctx.fillStyle = '#e2e8f0';
@@ -1286,7 +1275,6 @@ async function createModelBackView(frontImagePath, userId) {
   return canvas.toBuffer('image/jpeg', { quality: 0.9 });
 }
 
-// Public endpoints
 app.get('/api/default-images', (req, res) => {
   res.json({
     models: defaultImages.models,
@@ -1327,7 +1315,6 @@ app.get('/', (req, res) => {
   });
 });
 
-// Start server
 const startServer = () => {
   const server = app.listen(PORT, '0.0.0.0', () => {
     const isReplicate = activeAIService instanceof ReplicateVellaService;
