@@ -1,0 +1,37 @@
+[
+  {
+    "id": "1762274373666",
+    "email": "briansitati9@gmail.com@example.com",
+    "password": "$2b$12$Medepnh91vH7LRl5NHAVn./WsCdfF6jjyAB5a0NghhzPEuxiFvM7e",
+    "createdAt": "2025-11-04T16:39:33.666Z",
+    "lastLogin": "2025-11-04T16:39:33.671Z"
+  },
+  {
+    "id": "1762275199604",
+    "email": "admin@example.com@example.com",
+    "password": "$2b$12$35k4vyeSx7uakLVwufF.vOSqNq5WbbzcVGuQp2yB1wPS5KpwFLwh6",
+    "createdAt": "2025-11-04T16:53:19.604Z",
+    "lastLogin": "2025-11-04T16:53:19.607Z"
+  },
+  {
+    "id": "1762275367766",
+    "email": "briansittt@gmail.com@example.com",
+    "password": "$2b$12$.LwxqyDMPh/cs.K/mVGOIuMETiVgipSznTYZu6wI3DAX73cf86B5W",
+    "createdAt": "2025-11-04T16:56:07.766Z",
+    "lastLogin": "2025-11-04T16:56:07.771Z"
+  },
+  {
+    "id": "1762276546581",
+    "email": "admin@example.com",
+    "password": "$2b$12$kt3XKY1UjpL.TWw0JZ05IOwH28WqJB0zz3aFZHCuWgnniyf7GgGqy",
+    "createdAt": "2025-11-04T17:15:46.581Z",
+    "lastLogin": "2025-11-04T17:23:18.005Z"
+  },
+  {
+    "id": "1762276985297",
+    "email": "briansitati9@gmail.com",
+    "password": "$2b$12$XeygoBYK8eQYuDR9/bBzWegFzHXyz7WiYxQ2lhCibxMc5iwDlC8Ee",
+    "createdAt": "2025-11-04T17:23:05.297Z",
+    "lastLogin": "2025-11-04T17:23:05.298Z"
+  }
+]
