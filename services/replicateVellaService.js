@@ -71,12 +71,12 @@ class ReplicateVellaService {
 
   async virtualTryOn(modelImagePath, garments, options = {}) {
     try {
-      console.log('🚀 Starting Vella 1.5 virtual try-on...');
-      console.log('👕 Garments to process:', garments.map(g => ({ type: g.type, path: g.imagePath })));
+      console.log('Starting Vella 1.5 virtual try-on...');
+      console.log('Garments to process:', garments.map(g => ({ type: g.type, path: g.imagePath })));
 
       const modelImageBuffer = await this.prepareImage(modelImagePath, 'model');
       const garmentType = this.determineGarmentType(garments);
-      console.log(`🎯 Determined garment_type: ${garmentType} for garments: ${garments.map(g => g.type).join(', ')}`);
+      console.log(`Determined garment_type: ${garmentType} for garments: ${garments.map(g => g.type).join(', ')}`);
       
       const input = {
         model_image: modelImageBuffer,
@@ -89,22 +89,22 @@ class ReplicateVellaService {
         const garmentImageBuffer = await this.prepareImage(garment.imagePath, 'garment');
         const garmentParam = this.getGarmentParameter(garment.type);
         
-        console.log(`🎯 Setting garment parameter: ${garmentParam} for type: ${garment.type}`);
+        console.log(`Setting garment parameter: ${garmentParam} for type: ${garment.type}`);
         input[garmentParam] = garmentImageBuffer;
       }
 
-      console.log('📤 Sending to Replicate Vella with parameters:', {
+      console.log('Sending to Replicate Vella with parameters:', {
         garmentTypes: garments.map(g => g.type),
         garment_type: input.garment_type,
         numOutputs: input.num_outputs,
         garmentParams: Object.keys(input).filter(key => key.includes('_image'))
       });
 
-      console.log('🎨 Running Vella 1.5 model...');
+      console.log('Running Vella 1.5 model...');
       const output = await this.replicate.run(this.model, { input });
 
-      console.log('✅ Replicate API call completed');
-      console.log('🔧 Output received, type:', typeof output, Array.isArray(output) ? `array with ${output.length} items` : 'single item');
+      console.log('Replicate API call completed');
+      console.log('Output received, type:', typeof output, Array.isArray(output) ? `array with ${output.length} items` : 'single item');
       
       return this.processReplicateOutput(output, options);
 
@@ -223,11 +223,11 @@ class ReplicateVellaService {
       }
 
       if (results.length === 0) {
-        console.warn('⚠️ No valid results processed, creating mock results');
+        console.warn('No valid results processed, creating mock results');
         return this.createMockResults();
       }
 
-      console.log(`✅ Successfully processed ${results.length} results`);
+      console.log(`Successfully processed ${results.length} results`);
       return results;
 
     } catch (error) {
@@ -246,7 +246,7 @@ class ReplicateVellaService {
       let imageUrl = result.imageUrl;
 
       if (typeof imageUrl === 'function') {
-        console.log('🔍 Converting FileOutput function to URL...');
+        console.log('Converting FileOutput function to URL...');
         imageUrl = imageUrl();
       }
 
@@ -275,7 +275,7 @@ class ReplicateVellaService {
         throw new Error('Empty response from image URL');
       }
 
-      console.log('✅ Image downloaded successfully');
+      console.log('Image downloaded successfully');
       return Buffer.from(response.data, 'binary');
 
     } catch (error) {
@@ -285,7 +285,7 @@ class ReplicateVellaService {
   }
 
   createMockResults() {
-    console.log('🎭 Creating mock results for testing');
+    console.log('Creating mock results for testing');
     
     return [{
       imageUrl: 'mock://tryon-result-1',
