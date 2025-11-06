@@ -373,7 +373,7 @@ app.post('/api/auth/verify', authenticateToken, (req, res) => {
   });
 });
 
-// AI Service Classes (same as before)
+// AI Service Classes
 class ReplicateVellaService {
   constructor() {
     this.apiToken = process.env.REPLICATE_API_TOKEN;
